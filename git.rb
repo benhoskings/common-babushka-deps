@@ -1,15 +1,3 @@
-dep 'git.managed' do
-  requires 'ppa'.with('ppa:git-core/ppa')
-  installs 'git'
-  provides 'git >= 1.7.4.1'
-end
-
-dep 'git.src', :version do
-  version.default!('1.7.9')
-  source "http://git-core.googlecode.com/files/git-#{version}.tar.gz"
-  met? { in_path? "git >= #{version}" }
-end
-
 dep 'web repo', :path do
   requires [
     'web repo exists'.with(path),
@@ -56,29 +44,5 @@ dep 'web repo exists', :path do
     cd path, :create => true do
       shell "git init"
     end
-  }
-end
-
-dep 'github token set' do
-  met? { !shell('git config --global github.token').blank? }
-  meet { shell("git config --global github.token '#{var(:github_token)}'")}
-end
-
-dep 'git fs' do
-  def repo
-    Babushka::GitRepo.new('/')
-  end
-  met? {
-    repo.exists?
-  }
-  meet {
-    log_shell "Creating repo", 'git init', :cd => '/'
-    Babushka::Resource.get(
-      'https://raw.github.com/benhoskings/git-root/master/.gitignore'
-    ) {|path|
-      path.copy('/.gitignore')
-    }
-    repo.repo_shell('git add .gitignore')
-    repo.repo_shell('git commit -m "Initial commit."')
   }
 end
