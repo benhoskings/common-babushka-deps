@@ -1,4 +1,4 @@
-dep 'ready for update.repo', :git_ref_data, :env do
+dep 'pre-receive.repo', :git_ref_data, :env do
   env.default!(ENV['RAILS_ENV'] || ENV['RACK_ENV'] || 'production')
   requires [
     'valid git_ref_data.repo'.with(git_ref_data),
@@ -7,7 +7,7 @@ dep 'ready for update.repo', :git_ref_data, :env do
   ]
 end
 
-dep 'up to date.repo', :git_ref_data, :env do
+dep 'post-receive.repo', :git_ref_data, :env do
   env.default!(ENV['RAILS_ENV'] || ENV['RACK_ENV'] || 'production')
   requires [
     'on correct branch.repo'.with(ref_info[:branch]),
