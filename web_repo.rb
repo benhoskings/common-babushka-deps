@@ -23,13 +23,13 @@ dep 'web repo hooks', :path do
   met? {
     %w[pre-receive post-receive].all? {|hook_name|
       (path / ".git/hooks/#{hook_name}").executable? &&
-      Babushka::Renderable.new(path / ".git/hooks/#{hook_name}").from?(dependency.load_path.parent / "git/deploy-repo-#{hook_name}")
+      Babushka::Renderable.new(path / ".git/hooks/#{hook_name}").from?(dependency.load_path.parent / "web_repo/#{hook_name}.erb")
     }
   }
   meet {
     cd path, :create => true do
       %w[pre-receive post-receive].each {|hook_name|
-        render_erb "git/deploy-repo-#{hook_name}", :to => ".git/hooks/#{hook_name}"
+        render_erb "web_repo/#{hook_name}.erb", :to => ".git/hooks/#{hook_name}"
         shell "chmod +x .git/hooks/#{hook_name}"
       }
     end
