@@ -46,3 +46,7 @@ dep 'web repo exists', :path do
     end
   }
 end
+
+dep 'bundler.gem' do
+  provides 'bundle'
+end
