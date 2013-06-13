@@ -1,13 +1,13 @@
-dep 'pre-receive.repo', :git_ref_data, :env do
+dep 'pre-receive.git_hook', :git_ref_data, :env do
   env.default!(ENV['RAILS_ENV'] || ENV['RACK_ENV'] || 'production')
   requires [
-    'valid git_ref_data.repo'.with(git_ref_data),
+    'valid git_ref_data.git_hook'.with(git_ref_data),
     'clean.repo',
     'before deploy'.with(ref_info[:old_id], ref_info[:new_id], ref_info[:branch], env)
   ]
 end
 
-dep 'post-receive.repo', :git_ref_data, :env do
+dep 'post-receive.git_hook', :git_ref_data, :env do
   env.default!(ENV['RAILS_ENV'] || ENV['RACK_ENV'] || 'production')
   requires [
     'on correct branch.repo'.with(ref_info[:branch]),
@@ -36,7 +36,7 @@ dep 'after deploy', :old_id, :new_id, :branch, :env do
   requires 'current dir:after deploy'.with(old_id, new_id, branch, env) if Dep('current dir:after deploy')
 end
 
-dep 'valid git_ref_data.repo', :git_ref_data do
+dep 'valid git_ref_data.git_hook', :git_ref_data do
   met? {
     git_ref_data[ref_data_regexp] || unmeetable!("Invalid git_ref_data '#{git_ref_data}'.")
   }

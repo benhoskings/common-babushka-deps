@@ -2,4 +2,4 @@
 
 cd .. # up from .git/
 unset GIT_DIR # otherwise `git` commands can't see other repos
-babushka --colour 'common:post-receive.repo' git_ref_data="$(cat /dev/stdin)"
+babushka --colour 'common:post-receive.git_hook' git_ref_data="$(cat /dev/stdin)"
