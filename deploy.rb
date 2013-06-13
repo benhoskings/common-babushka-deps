@@ -1,28 +1,27 @@
 dep 'pre-receive.git_hook', :git_ref_data, :env do
   env.default!(ENV['RAILS_ENV'] || ENV['RACK_ENV'] || 'production')
   requires [
-    'valid git_ref_data.git_hook'.with(git_ref_data),
     'clean.repo',
-    'before deploy'.with(ref_info[:old_id], ref_info[:new_id], ref_info[:branch], env)
+    'before deploy'.with(old_id, new_id, branch, env)
   ]
 end
 
 dep 'post-receive.git_hook', :git_ref_data, :env do
   env.default!(ENV['RAILS_ENV'] || ENV['RACK_ENV'] || 'production')
   requires [
-    'on correct branch.repo'.with(ref_info[:branch]),
-    'HEAD up to date.repo'.with(ref_info),
+    'on correct branch.repo'.with(branch),
+    'HEAD up to date.repo'.with(old_id, new_id, branch),
     'app bundled'.with(:root => '.', :env => env),
 
     # This and 'after deploy' below are separated so the deps in 'current dir'
     # they refer to load from the new code checked out by 'HEAD up to date.repo'.
     # Normally it would be fine because dep loading is lazy, but the "if Dep('...')"
     # checks trigger a source load when called.
-    'on deploy'.with(ref_info[:old_id], ref_info[:new_id], ref_info[:branch], env),
+    'on deploy'.with(old_id, new_id, branch, env),
 
     'unicorn restarted',
     'maintenance page down',
-    'after deploy'.with(ref_info[:old_id], ref_info[:new_id], ref_info[:branch], env)
+    'after deploy'.with(old_id, new_id, branch, env)
   ]
 end
 
@@ -34,12 +33,6 @@ dep 'on deploy', :old_id, :new_id, :branch, :env do
 end
 dep 'after deploy', :old_id, :new_id, :branch, :env do
   requires 'current dir:after deploy'.with(old_id, new_id, branch, env) if Dep('current dir:after deploy')
-end
-
-dep 'valid git_ref_data.git_hook', :git_ref_data do
-  met? {
-    git_ref_data[ref_data_regexp] || unmeetable!("Invalid git_ref_data '#{git_ref_data}'.")
-  }
 end
 
 dep 'clean.repo' do
