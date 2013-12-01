@@ -209,7 +209,7 @@ dep 'delayed job restarted', :template => 'task' do
       log "`rake jobs:work` isn't running."
       true
     else
-      pid = output.scan(/^\w+\s+(\d+)\s+/).flatten.first
+      pid = output.scan(/^\S+\s+(\d+)\s+/).flatten.first
       log_shell "Sending SIGTERM to #{pid}", "kill -s TERM #{pid}"
     end
   }
