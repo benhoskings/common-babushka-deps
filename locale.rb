@@ -11,7 +11,7 @@ end
 
 dep 'set.locale', :locale_name do
   locale_name.default!('en_AU')
-  requires 'exists.locale'.with(locale_name)
+  requires 'generated.locale'.with(locale_name)
   met? {
     shell('locale').val_for('LANG')[locale_regex(locale_name)]
   }
@@ -27,11 +27,21 @@ dep 'set.locale', :locale_name do
   }
 end
 
-dep 'exists.locale', :locale_name do
+dep 'generated.locale', :locale_name do
+  requires 'enabled.locale'.with(locale_name)
   met? {
     local_locale(locale_name)
   }
   meet {
     shell "locale-gen #{locale_name}.UTF-8", :log => true
+  }
+end
+
+dep 'enabled.locale', :locale_name do
+  met? {
+    '/etc/locale.gen'.p.read[/^#{locale_regex(locale_name)}/]
+  }
+  meet {
+    '/etc/locale.gen'.p.puts("#{locale_name}.UTF-8 UTF-8")
   }
 end
