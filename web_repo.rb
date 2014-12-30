@@ -3,7 +3,6 @@ dep 'web repo', :path do
     'web repo exists'.with(path),
     'web repo hooks'.with(path),
     'web repo always receives'.with(path),
-    'bundler.gem'
   ]
   met? {
     vanity_path = path.p.sub(/^#{Etc.getpwuid(Process.euid).dir.chomp('/')}/, '~')
@@ -45,8 +44,4 @@ dep 'web repo exists', :path do
       shell "git init"
     end
   }
-end
-
-dep 'bundler.gem' do
-  provides 'bundle'
 end
