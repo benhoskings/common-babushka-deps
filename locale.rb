@@ -43,7 +43,11 @@ end
 
 dep 'enabled.locale', :locale_name do
   met? {
-    '/etc/locale.gen'.p.read[/^#{locale_regex(locale_name)}/]
+    if !'/etc/locale.gen'.p.exists?
+      log_ok "Skipping, since /etc/locale.gen doesn't exist."
+    else
+      '/etc/locale.gen'.p.read[/^#{locale_regex(locale_name)}/]
+    end
   }
   meet {
     '/etc/locale.gen'.p.puts("#{locale_name}.UTF-8 UTF-8")
