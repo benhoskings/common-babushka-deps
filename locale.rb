@@ -12,6 +12,15 @@ end
 dep 'set.locale', :locale_name do
   locale_name.default!('en_AU')
   requires 'generated.locale'.with(locale_name)
+
+  def locale_settings(should_export)
+    export = should_export ? 'export ' : ''
+    <<-SH
+#{export}LANG=#{local_locale(locale_name)}
+#{export}LC_ALL=#{local_locale(locale_name)}
+    SH
+  end
+
   met? {
     locale_info = shell('locale')
     %w[LANG LC_ALL].all? {|setting|
@@ -19,23 +28,14 @@ dep 'set.locale', :locale_name do
     }
   }
   meet {
-    locale_settings = <<-SH
-LANG=#{local_locale(locale_name)}
-LC_ALL=#{local_locale(locale_name)}
-    SH
-    export_locales = <<-SH
-export LANG
-export LC_ALL
-    SH
-
     if Babushka.host.matches?(:arch)
-      sudo(%{echo "#{locale_settings}" > /etc/locale.conf})
+      sudo(%{echo "#{locale_settings(false)}" > /etc/locale.conf})
       # Arch doesn't consult /etc/locale.conf on non-interactive logins.
-      sudo(%{echo "#{locale_settings}#{export_locales}" >> /etc/environment})
+      sudo(%{echo "#{locale_settings(true)}" >> /etc/environment})
     elsif Babushka.host.matches?(:apt)
-      sudo(%{echo "#{locale_settings}" > /etc/default/locale})
+      sudo(%{echo "#{locale_settings(false)}" > /etc/default/locale})
     elsif Babushka.host.matches?(:bsd)
-      sudo(%{echo "#{locale_settings}" > /etc/profile})
+      sudo(%{echo "#{locale_settings(false)}" > /etc/profile})
     end
   }
   after {
