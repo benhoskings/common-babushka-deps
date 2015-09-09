@@ -46,6 +46,7 @@ dep 'locked for deploy', :path do
     # 1) If it were split over met?/meet, there would be a race condition;
     # 2) Checking for a lock via ruby unavoidably claims it if possible.
     if lockfile.flock(File::LOCK_EX | File::LOCK_NB) == 0
+      at_exit { File.unlink(lockfile) }
       log_ok "This repo is locked until babushka exits."
     else
       unmeetable! "Another deploy has locked the repo."
