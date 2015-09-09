@@ -1,7 +1,7 @@
 dep 'pre-receive.git_hook', :git_ref_data, :env do
   env.default!(ENV['RAILS_ENV'] || ENV['RACK_ENV'] || 'production')
   requires [
-    'locked for deploy'.with(:root => '.'),
+    'locked for deploy'.with(:path => '.'),
     'clean.repo',
     'before deploy'.with(old_id, new_id, branch, env)
   ]
@@ -10,7 +10,7 @@ end
 dep 'post-receive.git_hook', :git_ref_data, :env do
   env.default!(ENV['RAILS_ENV'] || ENV['RACK_ENV'] || 'production')
   requires [
-    'locked for deploy'.with(:root => '.'),
+    'locked for deploy'.with(:path => '.'),
     'on correct branch.repo'.with(branch),
     'HEAD up to date.repo'.with(old_id, new_id, branch),
     'app bundled'.with(:root => '.', :env => env),
@@ -37,16 +37,16 @@ dep 'after deploy', :old_id, :new_id, :branch, :env do
   requires 'current dir:after deploy'.with(old_id, new_id, branch, env) if Dep('current dir:after deploy')
 end
 
-dep 'locked for deploy', :root do
-  setup {
-    # This file is closed (and hence unlocked) when babushka exits.
-    @f = File.open(root / '.babushka-deploy.lockfile', 'a')
-  }
+dep 'locked for deploy', :path do
   met? {
+    # This file is closed (and hence unlocked) when babushka exits.
+    lockfile = File.open(path / '.babushka-deploy.lockfile', 'a')
+
     # This is really the meet{} operation, but:
     # 1) If it were split over met?/meet, there would be a race condition;
     # 2) Checking for a lock via ruby unavoidably claims it if possible.
-    if @f.flock(File::LOCK_EX | File::LOCK_NB) == 0
+    if lockfile.flock(File::LOCK_EX | File::LOCK_NB) == 0
+      at_exit { File.unlink(lockfile) }
       log_ok "This repo is locked until babushka exits."
     else
       unmeetable! "Another deploy has locked the repo."
