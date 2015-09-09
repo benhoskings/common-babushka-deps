@@ -38,15 +38,14 @@ dep 'after deploy', :old_id, :new_id, :branch, :env do
 end
 
 dep 'locked for deploy', :root do
-  setup {
-    # This file is closed (and hence unlocked) when babushka exits.
-    @f = File.open(root / '.babushka-deploy.lockfile', 'a')
-  }
   met? {
+    # This file is closed (and hence unlocked) when babushka exits.
+    f = File.open(root / '.babushka-deploy.lockfile', 'a')
+
     # This is really the meet{} operation, but:
     # 1) If it were split over met?/meet, there would be a race condition;
     # 2) Checking for a lock via ruby unavoidably claims it if possible.
-    if @f.flock(File::LOCK_EX | File::LOCK_NB) == 0
+    if f.flock(File::LOCK_EX | File::LOCK_NB) == 0
       log_ok "This repo is locked until babushka exits."
     else
       unmeetable! "Another deploy has locked the repo."
