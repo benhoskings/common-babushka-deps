@@ -7,7 +7,7 @@ meta :push do
   end
   def self.remote_head remote
     host, path = remote_host_and_path(remote)
-    @remote_head ||= shell!("ssh #{host} 'cd #{path} && git rev-parse --short HEAD 2>/dev/null || echo 0000000'")
+    @remote_head ||= shell!("ssh #{host} 'cd #{path} && git rev-parse HEAD 2>/dev/null || echo 0000000'")
   end
   def remote_host; self.class.remote_host_and_path(remote).first end
   def remote_path; self.class.remote_host_and_path(remote).last end
@@ -55,8 +55,8 @@ dep 'pushed.push', :ref, :remote do
     'ok to update.push'.with(ref, remote)
   ]
   met? {
-    (remote_head == shell("git rev-parse --short #{ref} 2>/dev/null")).tap {|result|
-      log "#{remote} is on #{remote_head}.", :as => (:ok if result)
+    (remote_head == shell("git rev-parse #{ref} 2>/dev/null")).tap {|result|
+      log "#{remote} is on #{remote_head[0...7]}.", :as => (:ok if result)
     }
   }
   meet {
@@ -76,9 +76,9 @@ dep 'ok to update.push', :ref, :remote do
     if remote_head[/^0+$/]
       log_ok "The remote repo is empty."
     elsif !repo.repo_shell("git rev-parse #{remote_head}", &:ok?)
-      confirm "The current HEAD on #{remote}, #{remote_head}, isn't present locally. OK to push #{'(This is probably a bad idea)'.colorize('on red')}"
-    elsif shell("git merge-base #{ref} #{remote_head}", &:stdout)[0...7] != remote_head
-      confirm "Pushing #{ref} to #{remote} would not fast forward (#{remote} is on #{remote_head}). That OK?"
+      confirm "The current HEAD on #{remote}, #{remote_head[0...7]}, isn't present locally. OK to push #{'(This is probably a bad idea)'.colorize('on red')}"
+    elsif shell("git merge-base #{ref} #{remote_head}", &:stdout) != remote_head
+      confirm "Pushing #{ref} to #{remote} would not fast forward (#{remote} is on #{remote_head[0...7]}). That OK?"
     else
       true
     end
