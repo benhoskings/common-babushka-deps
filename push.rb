@@ -77,7 +77,7 @@ dep 'ok to update.push', :ref, :remote do
       log_ok "The remote repo is empty."
     elsif !repo.repo_shell("git rev-parse #{remote_head}", &:ok?)
       confirm "The current HEAD on #{remote}, #{remote_head[0...7]}, isn't present locally. OK to push #{'(This is probably a bad idea)'.colorize('on red')}"
-    elsif shell("git merge-base #{ref} #{remote_head}", &:stdout) != remote_head
+    elsif shell("git merge-base #{ref} #{remote_head}", &:stdout).strip != remote_head
       confirm "Pushing #{ref} to #{remote} would not fast forward (#{remote} is on #{remote_head[0...7]}). That OK?"
     else
       true
