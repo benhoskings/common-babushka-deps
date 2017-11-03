@@ -54,9 +54,8 @@ dep 'pushed.push', :ref, :remote do
     'on origin.push'.with(ref),
     'ok to update.push'.with(ref, remote)
   ]
-  requires_when_unmet [
-    'current dir:on push'.with(ref, remote) if Dep('current dir:on push')
-  ]
+  current_dir_push = 'current dir:on push'.with(ref, remote) if Dep('current dir:on push')
+  requires_when_unmet [current_dir_push].compact
   met? {
     (remote_head == shell("git rev-parse #{ref} 2>/dev/null")).tap {|result|
       log "#{remote} is on #{remote_head[0...7]}.", :as => (:ok if result)
